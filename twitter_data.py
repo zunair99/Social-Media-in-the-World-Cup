@@ -4,13 +4,7 @@ import os
 import pandas as pd
 import datetime
 
-def auth():
-    # Authenticate to Twitter
-    bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
-    consumer_key = os.environ.get("TWITTER_API_KEY")
-    consumer_secret = os.environ.get("TWITTER_KEY_SECRET")
-    access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
-    access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
+def auth(bearer_token, consumer_key, consumer_secret, access_token, access_token_secret):
 
     # Initialize the Tweepy API client
     # Specifications:
@@ -29,10 +23,7 @@ def auth():
     print("Twitter API Client Initialized.")
     return client
 
-def get_tweets():
-
-    # Initialize the Tweepy API client
-    client = auth()
+def get_tweets(client):
 
     # Get the 100 most recent tweets from the FIFA World Cup account
     # Specifications:
@@ -55,8 +46,7 @@ def get_tweets():
 
     return df
 
-def transform_df():
-    df = get_tweets()
+def transform_df(df):
 
     # Convert the attachments column from a dictionary to columns
     df = pd.concat([df.drop(['attachments'], axis=1), df['attachments'].apply(pd.Series)], axis=1)
@@ -88,7 +78,24 @@ def transform_df():
     return df
 
 def main():
-    transform_df()
+
+    # Get the Twitter API credentials from the environment variables
+    bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
+    consumer_key = os.environ.get("TWITTER_API_KEY")
+    consumer_secret = os.environ.get("TWITTER_KEY_SECRET")
+    access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
+    access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
+    
+    # Initialize the Twitter API client
+    client = auth(bearer_token, consumer_key, consumer_secret, access_token, access_token_secret)
+    
+    # Get the tweets from the FIFA World Cup account
+    df = get_tweets(client)
+
+    # Transform the DataFrame and return the result
+    return transform_df(df)
 
 if __name__ == '__main__':
+
+    # Run the main function
     main()
