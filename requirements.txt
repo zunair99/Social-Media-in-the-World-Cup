@@ -1,0 +1,7 @@
+tweepy
+os
+pandas
+datetime
+sqlalchemy
+argparse
+psycopg2

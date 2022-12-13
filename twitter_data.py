@@ -4,7 +4,13 @@ import os
 import pandas as pd
 import datetime
 
-def auth(bearer_token, consumer_key, consumer_secret, access_token, access_token_secret):
+def auth():
+    # Authenticate to Twitter
+    bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
+    consumer_key = os.environ.get("TWITTER_API_KEY")
+    consumer_secret = os.environ.get("TWITTER_KEY_SECRET")
+    access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
+    access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
 
     # Initialize the Tweepy API client
     # Specifications:
@@ -23,7 +29,10 @@ def auth(bearer_token, consumer_key, consumer_secret, access_token, access_token
     print("Twitter API Client Initialized.")
     return client
 
-def get_tweets(client):
+def get_tweets():
+
+    # Initialize the Tweepy API client
+    client = auth()
 
     # Get the 100 most recent tweets from the FIFA World Cup account
     # Specifications:
@@ -46,13 +55,12 @@ def get_tweets(client):
 
     return df
 
-def transform_df(df):
+def transform_df():
+    df = get_tweets()
 
     # Convert the attachments column from a dictionary to columns
     df = pd.concat([df.drop(['attachments'], axis=1), df['attachments'].apply(pd.Series)], axis=1)
 
-    # Drop unnecessary columns
-    df.drop(0, axis = 1)
 
     # Convert the media_keys column from a string to a Boolean object
     df['media_check'] = df['media_keys'].isna().replace({True: 'No Media', False: 'Media'})
@@ -75,27 +83,12 @@ def transform_df(df):
     # Get the edit history for each tweet, add to a new column in the DataFrame
     df['edit_history']=get_edit_history()
     print("Edit History Boolean Added to DataFrame.")
+    # Drop unnecessary columns
+    df = df.drop([0,'edit_history_tweet_ids','poll_ids','media_keys'], axis = 1)
     return df
 
 def main():
-
-    # Get the Twitter API credentials from the environment variables
-    bearer_token = os.environ.get("TWITTER_BEARER_TOKEN")
-    consumer_key = os.environ.get("TWITTER_API_KEY")
-    consumer_secret = os.environ.get("TWITTER_KEY_SECRET")
-    access_token = os.environ.get("TWITTER_ACCESS_TOKEN")
-    access_token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET")
-    
-    # Initialize the Twitter API client
-    client = auth(bearer_token, consumer_key, consumer_secret, access_token, access_token_secret)
-    
-    # Get the tweets from the FIFA World Cup account
-    df = get_tweets(client)
-
-    # Transform the DataFrame and return the result
-    return transform_df(df)
+    transform_df()
 
 if __name__ == '__main__':
-
-    # Run the main function
     main()
